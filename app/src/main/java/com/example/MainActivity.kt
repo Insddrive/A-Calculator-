@@ -70,6 +70,16 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
     var dragAmountY by remember { mutableStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
 
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogText by remember { mutableStateOf("") }
+    var dialogAction by remember { mutableStateOf<() -> Unit>({}) }
+
+    val triggerDialog = { text: String, action: () -> Unit ->
+        dialogText = text
+        dialogAction = action
+        showDialog = true
+    }
+
     // Base colors matching the original PWA CSS style
     val bgColor = Color(0xFF000000)
     val orangeColor = Color(0xFFF07041)
@@ -315,7 +325,7 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                             modifier = Modifier.weight(1f),
                             textColor = orangeColor,
                             onClick = {
-                                showConfirmation(context, "ਕੀ ਤੁਸੀਂ ਸਭ ਕੁਝ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
+                                triggerDialog("ਕੀ ਤੁਸੀਂ ਸਭ ਕੁਝ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
                                     viewModel.pressButton("AC")
                                 }
                             }
@@ -397,7 +407,7 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                             icon = CustomIcons.Trash,
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                showConfirmation(context, "ਕੀ ਤੁਸੀਂ ਸਭ ਕੁਝ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
+                                triggerDialog("ਕੀ ਤੁਸੀਂ ਸਭ ਕੁਝ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
                                     viewModel.masterReset()
                                 }
                             }
@@ -409,7 +419,7 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 if (tabs.size > 1) {
-                                    showConfirmation(context, "ਕੀ ਤੁਸੀਂ ਇਹ ਕੈਲਕੁਲੇਟਰ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
+                                    triggerDialog("ਕੀ ਤੁਸੀਂ ਇਹ ਕੈਲਕੁਲੇਟਰ ਡਿਲੀਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?") {
                                         viewModel.deleteActiveTab()
                                     }
                                 }
@@ -450,17 +460,48 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                 }
             }
         }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                text = {
+                    Text(
+                        text = dialogText,
+                        fontSize = 18.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            dialogAction()
+                            showDialog = false
+                        }
+                    ) {
+                        Text(
+                            text = "ਹਾਂ",
+                            color = orangeColor,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showDialog = false }
+                    ) {
+                        Text(
+                            text = "ਨਾ",
+                            color = Color(0xFF999999),
+                            fontSize = 16.sp
+                        )
+                    }
+                },
+                containerColor = Color(0xFF1E1E1E),
+                shape = RoundedCornerShape(20.dp)
+            )
+        }
     }
-}
-
-// Confirmation helper alert matching original PWA dialog messages
-fun showConfirmation(context: Context, message: String, onConfirm: () -> Unit) {
-    android.app.AlertDialog.Builder(context, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-        .setMessage(message)
-        .setPositiveButton("ਹਾਂ") { _, _ -> onConfirm() }
-        .setNegativeButton("ਨਾ", null)
-        .create()
-        .show()
 }
 
 @Composable
