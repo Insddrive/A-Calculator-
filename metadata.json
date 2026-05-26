@@ -1,0 +1,6 @@
+{
+  "name": "ਪ੍ਰੋ ਕੈਲਕੂਲੇਟਰ",
+  "description": "ਐਡਵਾਂਸਡ ਪੰਜਾਬੀ ਮਲਟੀ-ਟੈਬ ਕੈਲਕੂਲੇਟਰ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
