@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -66,11 +67,11 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
     val liveResult = viewModel.getLiveResult(activeTab.expression)
     val tokens = viewModel.tokenizeExpression(activeTab.expression)
 
-    var keypadVisible by remember { mutableStateOf(true) }
+    var keypadVisible by rememberSaveable { mutableStateOf(true) }
     var dragAmountY by remember { mutableStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     var dialogText by remember { mutableStateOf("") }
     var dialogAction by remember { mutableStateOf<() -> Unit>({}) }
 
@@ -180,8 +181,7 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                                     keypadVisible = true // swipe up -> show
                                 }
                             },
-                            onVerticalDrag = { change, dragAmount ->
-                                change.consume()
+                            onVerticalDrag = { _, dragAmount ->
                                 dragAmountY += dragAmount
                             }
                         )
@@ -190,8 +190,10 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
             ) {
                 // History area (scrolls freely)
                 val histScrollState = rememberScrollState()
-                LaunchedEffect(activeTab.history) {
-                    histScrollState.scrollTo(histScrollState.maxValue)
+                LaunchedEffect(activeTab.history, histScrollState.maxValue) {
+                    if (histScrollState.maxValue > 0) {
+                        histScrollState.scrollTo(histScrollState.maxValue)
+                    }
                 }
                 Box(
                     modifier = Modifier
@@ -457,6 +459,29 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
                             }
                         }
                     }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = !keypadVisible,
+                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(Color(0xFF1E1E1E))
+                        .clickable { keypadVisible = true }
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "ਕੀਪੈਡ ਦਿਖਾਓ ↑",
+                        color = orangeColor,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
