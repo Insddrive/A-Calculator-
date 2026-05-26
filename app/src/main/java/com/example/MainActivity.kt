@@ -190,7 +190,7 @@ fun CalculatorApp(viewModel: CalculatorViewModel) {
             ) {
                 // History area (scrolls freely)
                 val histScrollState = rememberScrollState()
-                LaunchedEffect(activeTab.history, histScrollState.maxValue) {
+                LaunchedEffect(activeTab.history) {
                     if (histScrollState.maxValue > 0) {
                         histScrollState.scrollTo(histScrollState.maxValue)
                     }
